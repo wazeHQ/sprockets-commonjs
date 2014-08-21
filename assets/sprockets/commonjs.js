@@ -6,13 +6,17 @@
       var path = expand(root, name), indexPath = expand(path, './index'), module, fn;
       module   = cache[path] || cache[indexPath];
       if (module) {
+        if (module.__define_in_progress) {
+          throw new Error("Circular dependency: " + name + " already required.");
+        }
         return module;
       } else if (fn = modules[path] || modules[path = indexPath]) {
-        module = {id: path, exports: {}};
+        module = {id: path, exports: { __define_in_progress: true } };
         cache[path] = module.exports;
         fn(module.exports, function(name) {
           return require(name, dirname(path));
         }, module);
+        delete module.exports.__define_in_progress;
         return cache[path] = module.exports;
       } else {
         throw 'module ' + name + ' not found';
