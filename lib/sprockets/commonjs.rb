@@ -3,8 +3,9 @@ require 'tilt'
 
 module Sprockets
   class CommonJS < Tilt::Template
-    WRAPPER = '%s.define({%s:' +
-                     'function(exports, require, module){' +
+
+    WRAPPER = '%s.define({"%s":' +
+                     "function(exports, require, module){" +
                      '%s' +
                      ";}});\n"
 
