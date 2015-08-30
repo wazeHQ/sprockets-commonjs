@@ -59,7 +59,19 @@ module Sprockets
     end
 
     def module_name(scope)
-      scope.logical_path.gsub(/^\.?\//, '') # Remove relative paths
+      path = scope.logical_path.gsub(/^\.?\//, '') # Remove relative paths
+      basename = File.basename(path)
+      dirname = File.dirname(path)
+
+      basename = basename[1..-1] if basename.start_with? '_'
+
+      if basename == 'index'
+        dirname
+      elsif dirname != '.'
+        File.join(dirname, basename)
+      else
+        basename
+      end
     end
 
   end
