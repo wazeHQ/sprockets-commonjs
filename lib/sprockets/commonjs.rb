@@ -12,11 +12,13 @@ module Sprockets
     class << self
       attr_accessor :default_namespace
       attr_accessor :module_paths
+      attr_accessor :ignore_paths
     end
 
     self.default_mime_type = 'application/javascript'
     self.default_namespace = 'this.require'
     self.module_paths = []
+    self.ignore_paths = []
 
     protected
 
@@ -37,11 +39,18 @@ module Sprockets
     attr_reader :namespace
 
     def commonjs_module?(scope)
-      in_path?(scope) && (exports_module? || has_dependencies?)
+      in_path?(scope) && !ignored_path?(scope) &&
+        (exports_module? || has_dependencies?)
     end
 
     def in_path?(scope)
       self.class.module_paths.any? do |path|
+        scope.pathname.to_s.start_with? path
+      end
+    end
+
+    def ignored_path?(scope)
+      self.class.ignore_paths.any? do |path|
         scope.pathname.to_s.start_with? path
       end
     end
