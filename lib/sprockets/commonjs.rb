@@ -1,6 +1,23 @@
 require 'sprockets'
 require 'tilt'
 
+# TiltProcessor converts the Tilt::Template instance to a Sprockets 3.x
+# friendly interface, avoiding deprecation warnings. See https://git.io/v9lfc
+class TiltProcessor
+  def initialize(klass)
+    @klass = klass
+  end
+
+  def call(input)
+    filename = input[:filename]
+    data     = input[:data]
+    context  = input[:environment].context_class.new(input)
+
+    data = @klass.new(filename) { data }.render(context, {})
+    context.metadata.merge(data: data.to_str)
+  end
+end
+
 module Sprockets
   class CommonJS < Tilt::Template
 
@@ -85,6 +102,6 @@ module Sprockets
 
   end
 
-  register_postprocessor 'application/javascript', CommonJS
+  register_postprocessor 'application/javascript', TiltProcessor.new(CommonJS)
   append_path File.expand_path('../../../assets', __FILE__)
 end
